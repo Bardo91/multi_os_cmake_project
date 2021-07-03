@@ -1,9 +1,16 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+
+set(CMAKE_AUTOMOC ON)
+
 file(GLOB_RECURSE resourceFiles "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 
-set(appName app1)
-add_executable(${appName} src/main.cpp ${resourceFiles})
+set(appName app2)
+add_executable(app2 src/main.cpp ${resourceFiles})
+
+## Adding dependencies
+target_link_libraries(app2 PUBLIC Qt5::Widgets)
 
 ## Setting up OS especific bundles, exe, etc... properties
 if(APPLE)
@@ -23,9 +30,9 @@ if(APPLE)
 elseif(UNIX)
     file(COPY ${resourceFiles} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
 elseif(WIN32)
-    # set_target_properties(  ${appName}  PROPERTIES
-    #                         WIN32_EXECUTABLE TRUE
-    #                         LINK_FLAGS "/ENTRY:mainCRTStartup")
+    set_target_properties(  ${appName}  PROPERTIES
+                            WIN32_EXECUTABLE TRUE
+                            LINK_FLAGS "/ENTRY:mainCRTStartup")
     file(COPY ${resourceFiles} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
 else()
     message(FATAL_ERROR "Unrecognized OS")
