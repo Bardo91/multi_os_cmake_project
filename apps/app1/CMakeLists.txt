@@ -19,7 +19,9 @@ if(APPLE)
 elseif(UNIX)
     file(COPY "${resourceFiles}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
 elseif(WIN32)
-    set_target_properties(WINDOWS_EXECUTABLE TRUE)
+    # set_target_properties(  app1  PROPERTIES
+    #                         WIN32_EXECUTABLE TRUE
+    #                         LINK_FLAGS "/ENTRY:mainCRTStartup")
     file(COPY "${resourceFiles}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
 else()
     message(FATAL_ERROR "Unrecognized OS")
