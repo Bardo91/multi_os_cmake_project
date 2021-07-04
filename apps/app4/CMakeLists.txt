@@ -40,6 +40,21 @@ else()
 endif()
 
 
+## Gathering plugins
+include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
+
+set(qtPluginslist "")
+getQtPluginList(Widgets qtPluginslist)
+message(STATUS output var ${qtPluginslist})
+# getQtPluginList(Gui qtPluginslist)
+# getQtPluginList(Multimedia qtPluginslist)
+
+foreach(plugin ${qtPluginslist})
+    message(STATUS ${plugin})
+endforeach()
+message(FATAL_ERROR "STOP! wait a minute!")
+
+
 ## Gathering dependencies in a bundle. This only works for MACOSX By now. We will learn later about AppImage
 if(APPLE)
     # This line should be executed after the app has been generated, lets try to options
