@@ -43,28 +43,36 @@ endif()
 ## Gathering plugins
 include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
 
+# Getting targets of plugins
 set(qtPluginslist "")
 getQtPluginList(Widgets qtPluginslist)
-message(STATUS output var ${qtPluginslist})
-# getQtPluginList(Gui qtPluginslist)
-# getQtPluginList(Multimedia qtPluginslist)
-
-foreach(plugin ${qtPluginslist})
-    message(STATUS ${plugin})
-endforeach()
-message(FATAL_ERROR "STOP! wait a minute!")
-
+getQtPluginList(Gui qtPluginslist)
+getQtPluginList(Multimedia qtPluginslist)
 
 ## Gathering dependencies in a bundle. This only works for MACOSX By now. We will learn later about AppImage
 if(APPLE)
-    # This line should be executed after the app has been generated, lets try to options
 
+    set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
+    copyPluginsToBinTarget( "${CMAKE_CURRENT_BINARY_DIR}/${appName}.app/Contents/PlugIns" # This last folder varies depend on the OS
+                            qtPluginslist 
+                            finalListPluginDirs)
+
+    # This line should be executed after the app has been generated, lets try to options
     # Option one, tradicionally it is called in the instal step (at least is what I have always seen in tutorials)
     install(CODE    "
                     include(InstallRequiredSystemLibraries)
                     include(BundleUtilities)
-                    fixup_bundle(\"${CMAKE_CURRENT_BINARY_DIR}/${appName}.app\" \"\" \"\")
+                    fixup_bundle(\"${CMAKE_CURRENT_BINARY_DIR}/${appName}.app\" \"${finalListPluginDirs}\" \"\")
                     "
             COMPONENT Runtime)
-endif()
+elseif(UNIX)
 
+elseif(WIN32)
+    set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
+    copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/plugins # This last folder varies depend on the OS
+                            qtPluginslist 
+                            finalListPluginDirs)                        
+else()
+    message(FATAL_ERROR "Unrecognized OS")
+endif()
+        
