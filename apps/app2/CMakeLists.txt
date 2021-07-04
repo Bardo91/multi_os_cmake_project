@@ -22,11 +22,11 @@ if(APPLE)
                             )
 
     
-    set_target_properties(  ${appName} PROPERTIES
-                            RESOURCE ${resourceFiles})
+    # set_target_properties(  ${appName} PROPERTIES
+    #                         RESOURCE ${resourceFiles})
 
-    # set_source_files_properties(${resourceFiles} PROPERTIES 
-    #                             MACOSX_PACKAGE_LOCATION Resources)
+    set_source_files_properties(${resourceFiles} PROPERTIES 
+                                MACOSX_PACKAGE_LOCATION Resources)
 elseif(UNIX)
     file(COPY ${resourceFiles} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
 elseif(WIN32)
