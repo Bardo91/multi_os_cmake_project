@@ -40,4 +40,16 @@ else()
 endif()
 
 
+## Gathering dependencies in a bundle. This only works for MACOSX By now. We will learn later about AppImage
+if(APPLE)
+    # This line should be executed after the app has been generated, lets try to options
+
+    # Option one, tradicionally it is called in the instal step (at least is what I have always seen in tutorials)
+    install(CODE    "
+                    include(InstallRequiredSystemLibraries)
+                    include(BundleUtilities)
+                    fixup_bundle(\"${CMAKE_CURRENT_BINARY_DIR}/${appName}.app\" \"\" \"\")
+                    "
+            COMPONENT Runtime)
+endif()
 
