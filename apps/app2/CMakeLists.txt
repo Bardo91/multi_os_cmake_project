@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 set(CMAKE_AUTOMOC ON)
@@ -33,7 +37,7 @@ elseif(WIN32)
     set_target_properties(  ${appName}  PROPERTIES
                             WIN32_EXECUTABLE TRUE
                             LINK_FLAGS "/ENTRY:mainCRTStartup")
-    file(COPY ${resourceFiles} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
+    file(COPY ${resourceFiles} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Resources)
 else()
     message(FATAL_ERROR "Unrecognized OS")
 endif()
