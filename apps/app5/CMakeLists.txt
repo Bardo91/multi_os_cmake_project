@@ -45,6 +45,7 @@ endif()
 
 ## Gathering plugins
 include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
 
 # Getting targets of plugins
 set(qtPluginslist "")
@@ -68,13 +69,16 @@ if(APPLE)
                     fixup_bundle(\"${CMAKE_CURRENT_BINARY_DIR}/${appName}.app\" \"${finalListPluginDirs}\" \"\")
                     "
             COMPONENT Runtime)
-elseif(UNIX)
-
-elseif(WIN32)
+elseif(UNIX OR WIN32)
     set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
     copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/plugins # This last folder varies depend on the OS
                             qtPluginslist 
-                            finalListPluginDirs)                        
+                            finalListPluginDirs)        
+                            
+    DownloadDependencyWalker()
+    set(winDepList)
+    GetDependenciesExeWin(${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${appName}.exe winDepList)
+    file(COPY ${winDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
 else()
     message(FATAL_ERROR "Unrecognized OS")
 endif()
