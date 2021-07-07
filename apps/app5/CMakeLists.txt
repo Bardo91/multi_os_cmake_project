@@ -46,6 +46,7 @@ endif()
 ## Gathering plugins
 include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MSIXUtilities.cmake)
 
 # Getting targets of plugins
 set(qtPluginslist "")
@@ -55,7 +56,6 @@ getQtPluginList(Multimedia qtPluginslist)
 
 ## Gathering dependencies in a bundle. This only works for MACOSX By now. We will learn later about AppImage
 if(APPLE)
-
     set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
     copyPluginsToBinTarget( "${CMAKE_CURRENT_BINARY_DIR}/${appName}.app/Contents/PlugIns" # This last folder varies depend on the OS
                             qtPluginslist 
@@ -79,6 +79,14 @@ elseif(UNIX OR WIN32)
     set(winDepList)
     GetDependenciesExeWin(${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${appName}.exe winDepList)
     file(COPY ${winDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
+
+    MSIX_createPackage(
+        APP_NAME "app5" 
+        APP_VERSION "1.0.1.0"
+        COMPANY_NAME "CoopBardo" 
+        APP_DESCRIPTION "Not too much to say" 
+        APP_ICON_PATH "Resources/icon_${appName}.png"
+    )
 else()
     message(FATAL_ERROR "Unrecognized OS")
 endif()

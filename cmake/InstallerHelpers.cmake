@@ -14,8 +14,7 @@ macro(GetDependenciesExeWin _executable _depList)
     execute_process(COMMAND ${dpWalkerDir}/Dependencies.exe -modules ${_executable}
                     COMMAND grep -E MSV\|CONCRT\|VCRUNTIME\|Environment
                     OUTPUT_VARIABLE externalDeps )
-
-    message(STATUS ${externalDeps})
+                    
     string(REPLACE "\n" ";" listRawDeps ${externalDeps})    
     foreach(rawDep ${listRawDeps})
         string(REPLACE " : " ";" elements ${rawDep})  
