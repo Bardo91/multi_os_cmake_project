@@ -91,7 +91,7 @@ elseif(WIN32)
     )
 elseif(UNIX)
     set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
-    copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/plugins # This last folder varies depend on the OS
+    copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib/plugins # This last folder varies depend on the OS
                             qtPluginslist 
                             finalListPluginDirs)   
 
@@ -99,7 +99,7 @@ elseif(UNIX)
     # file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${appName} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/)
 
     GetDependenciesExeLinux(${CMAKE_CURRENT_BINARY_DIR}/${appName} linuxDepList)
-    file(COPY ${linuxDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
+    file(COPY ${linuxDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
     
     AppImage_createPackage(
         APP_NAME "app5" 

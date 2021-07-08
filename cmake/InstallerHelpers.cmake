@@ -37,7 +37,12 @@ macro(GetDependenciesExeLinux _executable _depList)
         if(${nElems} EQUAL 2)
             list(GET elements 1 depPathPlusAddress)
             string(REPLACE " (" ";" elements2 ${depPathPlusAddress})  
-            list(GET elements2 0 depPath)
+            list(GET elements2 0 depPathSym)
+
+            # Resolve symbolink links
+            execute_process(COMMAND readlink -f ${depPathSym} OUTPUT_VARIABLE depPath)
+            string(REPLACE "\n" "" depPath ${depPath})  
+            message(STATUS "SYM : ${depPathSym} . REAL: ${depPath}")
             list(APPEND ${_depList} ${depPath})
         endif()
     endforeach(rawDep)
