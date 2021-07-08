@@ -47,6 +47,7 @@ endif()
 include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/MSIXUtilities.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/NSISUtilities.cmake)
 
 # Getting targets of plugins
 set(qtPluginslist "")
@@ -80,13 +81,16 @@ elseif(UNIX OR WIN32)
     GetDependenciesExeWin(${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${appName}.exe winDepList)
     file(COPY ${winDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
 
-    MSIX_createPackage(
-        APP_NAME "app5" 
-        APP_VERSION "1.0.1.0"
-        COMPANY_NAME "CoopBardo" 
-        APP_DESCRIPTION "Not too much to say" 
-        APP_ICON_PATH "Resources/icon_${appName}.png"
-    )
+    # MSIX_createPackage(
+    #     APP_NAME "app5" 
+    #     APP_VERSION "1.0.1.0"
+    #     COMPANY_NAME "CoopBardo" 
+    #     APP_DESCRIPTION "Not too much to say" 
+    #     APP_ICON_PATH "Resources/icon_${appName}.png"
+    # )
+
+    NSIS_createPackage()
+
 else()
     message(FATAL_ERROR "Unrecognized OS")
 endif()
