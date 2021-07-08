@@ -1,11 +1,17 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <filesystem>
+#if defined(__linux__)
+    #include <experimental/filesystem>  // Not implemented until g++8
+    namespace fs = std::experimental::filesystem;
+#elif defined(_WIN32)
+    #include <filesystem>
+    namespace fs = std::filesystem;
+#endif
 
 
 int main(int _argc, char** _argv){
-    std::filesystem::path p = _argv[0];
+    fs::path p = _argv[0];
     auto parentPath = p.parent_path();
     auto imgPath = (parentPath/"Resources"/"sfdk.jpg").string();
 
