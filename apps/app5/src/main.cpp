@@ -2,7 +2,13 @@
 #include <iostream>
 
 #include <QApplication>
-#include <filesystem>
+#if defined(__linux__)
+    #include <experimental/filesystem>  // Not implemented until g++8
+    namespace fs = std::experimental::filesystem;
+#elif defined(_WIN32)
+    #include <filesystem>
+    namespace fs = std::filesystem;
+#endif
 
 #include <QMediaPlayer>
 #include <QHBoxLayout>
@@ -17,8 +23,12 @@ int main(int _argc, char** _argv){
     
     QApplication app(_argc, _argv);
 
-    std::filesystem::path p = _argv[0];
-    auto parentPath = p.parent_path();
+    fs::path p = _argv[0];
+    #if defined(__linux__)
+        fs::path parentPath = std::getenv("APPDIR");
+    #else
+        fs::path parentPath = p.parent_path();
+    #endif
     std::string musicPath = (parentPath/"Resources"/"music.mp3").string();
     std::string imgPath = (parentPath/"Resources"/"rappersdelight.png").string();
     if(musicPath.find("MacOS") != musicPath.npos){

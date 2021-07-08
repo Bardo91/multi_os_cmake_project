@@ -23,3 +23,27 @@ macro(GetDependenciesExeWin _executable _depList)
     endforeach(rawDep)
     # .\dp\Dependencies.exe -modules .\app5.exe | grep Environment
 endmacro(GetDependenciesExeWin)
+
+
+
+macro(GetDependenciesExeLinux _executable _depList)
+    execute_process(COMMAND ldd ${_executable}
+                    OUTPUT_VARIABLE externalDeps )
+                    
+    string(REPLACE "\n" ";" listRawDeps ${externalDeps})    
+    foreach(rawDep ${listRawDeps})
+        string(REPLACE " => " ";" elements ${rawDep})  
+        list(LENGTH elements nElems)
+        if(${nElems} EQUAL 2)
+            list(GET elements 1 depPathPlusAddress)
+            string(REPLACE " (" ";" elements2 ${depPathPlusAddress})  
+            list(GET elements2 0 depPathSym)
+
+            # Resolve symbolink links
+            execute_process(COMMAND readlink -f ${depPathSym} OUTPUT_VARIABLE depPath)
+            string(REPLACE "\n" "" depPath ${depPath})  
+            message(STATUS "SYM : ${depPathSym} . REAL: ${depPath}")
+            list(APPEND ${_depList} ${depPath})
+        endif()
+    endforeach(rawDep)
+endmacro(GetDependenciesExeLinux)

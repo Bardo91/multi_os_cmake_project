@@ -4,15 +4,16 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-find_package(Qt5 REQUIRED COMPONENTS Widgets Multimedia)
-
 set(CMAKE_AUTOMOC ON)
+find_package(Qt5 5.12 COMPONENTS Widgets Multimedia REQUIRED)
+
 
 file(GLOB_RECURSE resourceFiles "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 
 set(appName app5)
 add_executable(${appName} src/main.cpp ${resourceFiles})
 set_target_properties(${appName} PROPERTIES CXX_STANDARD 17)
+target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
 
 ## Adding dependencies
 target_link_libraries(${appName} PUBLIC Qt5::Widgets Qt5::Multimedia)
@@ -32,7 +33,7 @@ if(APPLE)
     set_source_files_properties(${resourceFiles} PROPERTIES 
                                 MACOSX_PACKAGE_LOCATION Resources)
 elseif(UNIX)
-    file(COPY ${resourceFiles} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Resources)
+    file(COPY ${resourceFiles} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Resources)
 elseif(WIN32)
     set_target_properties(  ${appName}  PROPERTIES
                             WIN32_EXECUTABLE TRUE
@@ -48,6 +49,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/MSIXUtilities.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/NSISUtilities.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/AppImageUtilities.cmake)
 
 # Getting targets of plugins
 set(qtPluginslist "")
@@ -70,13 +72,13 @@ if(APPLE)
                     fixup_bundle(\"${CMAKE_CURRENT_BINARY_DIR}/${appName}.app\" \"${finalListPluginDirs}\" \"\")
                     "
             COMPONENT Runtime)
-elseif(UNIX OR WIN32)
+elseif(WIN32)
     set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
     copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/plugins # This last folder varies depend on the OS
                             qtPluginslist 
                             finalListPluginDirs)        
                             
-    DownloadDependencyWalker()
+    DownloadDependencyWalker() # 666 This should run post make of app
     set(winDepList)
     GetDependenciesExeWin(${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${appName}.exe winDepList)
     file(COPY ${winDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
@@ -90,6 +92,25 @@ elseif(UNIX OR WIN32)
     # )
 
     NSIS_createPackage()
+
+elseif(UNIX)
+    set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
+    copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib/plugins # This last folder varies depend on the OS
+                            qtPluginslist 
+                            finalListPluginDirs)   
+
+    # 666 This should run post make of app
+    # file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${appName} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/)
+
+    GetDependenciesExeLinux(${CMAKE_CURRENT_BINARY_DIR}/${appName} linuxDepList)
+    file(COPY ${linuxDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
+    
+    AppImage_createPackage(
+        APP_NAME "app5" 
+        APP_VERSION "1.0.1.0"
+        COMPANY_NAME "CoopBardo" 
+        APP_DESCRIPTION "Not too much to say" 
+        APP_ICON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${appName}.png")
 
 else()
     message(FATAL_ERROR "Unrecognized OS")

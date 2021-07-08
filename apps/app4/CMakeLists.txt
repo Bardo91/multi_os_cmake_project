@@ -13,6 +13,7 @@ file(GLOB_RECURSE resourceFiles "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 set(appName app4)
 add_executable(${appName} src/main.cpp ${resourceFiles})
 set_target_properties(${appName} PROPERTIES CXX_STANDARD 17)
+target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
 
 ## Adding dependencies
 target_link_libraries(${appName} PUBLIC Qt5::Widgets Qt5::Multimedia)
