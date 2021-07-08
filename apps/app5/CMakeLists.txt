@@ -91,7 +91,14 @@ elseif(WIN32)
     #     APP_ICON_PATH "Resources/icon_${appName}.png"
     # )
 
-    NSIS_createPackage()
+    NSIS_createPackage(
+            APP_NAME "app5" 
+            APP_VERSION "1.0.1.0"
+            COMPANY_NAME "CoopBardo" 
+            APP_DESCRIPTION "Not too much to say" 
+            APP_ICON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${appName}.ico"
+            LICENSE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/license"
+    )
 
 elseif(UNIX)
     set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos

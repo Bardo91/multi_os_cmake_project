@@ -7,30 +7,46 @@ endmacro(NSIS_findMakeNsis)
 
 
 macro(NSIS_createPackage)
-    
+    set(options IS_x32)
+    set(oneValueArgs APP_NAME APP_VERSION COMPANY_NAME APP_DESCRIPTION APP_ICON_PATH LICENSE_PATH)
+    set(multiValueArgs "")
+    cmake_parse_arguments(NSIS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )    
+
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/installer.nsi
-        "# declare name of installer file
-        Outfile \"hello world.exe\"
-         
-        # open section
-        Section
-            # create a popup box, with an OK button and some text
-            MessageBox MB_OK \"Now We are Creating Hello_world.txt at Desktop!\"
+        "
+        Name \"${NSIS_APP_NAME} Installer\"
+        Outfile \"${NSIS_APP_NAME}_installer.exe\"
+        InstallDir \"$PROGRAMFILES\\${NSIS_COMPANY_NAME}\\${NSIS_APP_NAME}\"
+        LicenseData \"${NSIS_LICENSE_PATH}\"
+        Icon \"${NSIS_APP_ICON_PATH}\"
+
+        # Get installation folder from registry if available
+        InstallDirRegKey HKCU \"${NSIS_COMPANY_NAME}\\${NSIS_APP_NAME}\" \"\"
+        
+        section \"install\"
+            # Files for the install directory - to build the installer, these should be in the same directory as the install script (this file)
+            setOutPath $INSTDIR
+            # Files added here should be removed by the uninstaller (see section \"uninstall\")
+            file \"${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${NSIS_APP_NAME}.exe\"
+            file \"${NSIS_APP_ICON_PATH}\"
+            # Add any other files for the install directory (license files, app data, etc) here
+
+            # Uninstaller - See function un.onInit and section \"uninstall\" for configuration
+            writeUninstaller \"$INSTDIR\\uninstall.exe\"
+
+            # Start Menu
+            createDirectory \"$SMPROGRAMS\${COMPANYNAME}\"
+            createShortCut \"$SMPROGRAMS\\${COMPANYNAME}\\${APPNAME}.lnk\" \"$INSTDIR\\app.exe\" \"\" \"$INSTDIR\\logo.ico\"
+        sectionEnd
+
+        Section \"Uninstall\"
+            # ADD YOUR OWN FILES HERE...
             
-            /* open an output file called \"Hello_world.txt\", 
-            on the desktop in write mode. This file does not need to exist 
-            before script is compiled and run */
-            FileOpen $0 \"$DESKTOP\\Hello_world.txt\" w
+            Delete \"$INSTDIR\\Uninstall.exe\"
             
-            # write the string \"hello world!\" to the output file
-            FileWrite $0 \"hello world!\"
+            RMDir \"$INSTDIR\"
             
-            # close the file
-            FileClose $0
-            # Show Success message.
-            MessageBox MB_OK \"Hello_world.txt has been created successfully at Desktop!\"
-            
-            # end the section
+            DeleteRegKey /ifempty HKCU \"${NSIS_COMPANY_NAME}\\${NSIS_APP_NAME}\"
         SectionEnd
         ")
 
