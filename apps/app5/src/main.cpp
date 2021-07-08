@@ -24,7 +24,11 @@ int main(int _argc, char** _argv){
     QApplication app(_argc, _argv);
 
     fs::path p = _argv[0];
-    auto parentPath = p.parent_path();
+    #if defined(__linux__)
+        fs::path parentPath = std::getenv("APPDIR");
+    #else
+        fs::path parentPath = p.parent_path();
+    #endif
     std::string musicPath = (parentPath/"Resources"/"music.mp3").string();
     std::string imgPath = (parentPath/"Resources"/"rappersdelight.png").string();
     if(musicPath.find("MacOS") != musicPath.npos){
