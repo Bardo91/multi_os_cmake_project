@@ -13,8 +13,9 @@ file(GLOB_RECURSE resourceFiles "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 set(appName app5)
 add_executable(${appName} src/main.cpp ${resourceFiles})
 set_target_properties(${appName} PROPERTIES CXX_STANDARD 17)
-target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
-
+if(UNIX)
+    target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
+endif()
 ## Adding dependencies
 target_link_libraries(${appName} PUBLIC Qt5::Widgets Qt5::Multimedia)
 
@@ -73,15 +74,39 @@ if(APPLE)
                     "
             COMPONENT Runtime)
 elseif(WIN32)
-    set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
-    copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/plugins # This last folder varies depend on the OS
+    set(finalListPluginDirs \"\") # By now unused in windows, but essential for bundles in MACos
+    copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin # This folder varies depend on the OS
                             qtPluginslist 
-                            finalListPluginDirs)        
+                            finalListPluginDirs)     
                             
-    DownloadDependencyWalker() # 666 This should run post make of app
-    set(winDepList)
-    GetDependenciesExeWin(${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${appName}.exe winDepList)
-    file(COPY ${winDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake"
+        "
+            include(${PROJECT_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
+            include(${PROJECT_SOURCE_DIR}/cmake/NSISUtilities.cmake)   
+
+            DownloadDependencyWalker() # 666 This should run post make of app
+            set(winDepList \"\")
+            GetDependenciesExeWin(${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${appName}.exe winDepList)
+            file(COPY \$\{winDepList\} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
+            file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${appName}.exe DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
+
+            NSIS_createPackage(
+                APP_NAME \"app5\" 
+                APP_VERSION \"1.0.1.0\"
+                COMPANY_NAME \"CoopBardo\" 
+                APP_DESCRIPTION \"Not too much to say\" 
+                APP_ICON_PATH \"${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${appName}.ico\"
+                LICENSE_PATH \"${CMAKE_CURRENT_SOURCE_DIR}/license\"
+                CONFIG_FILE \"${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${appName}_installer.nsi\"
+            )
+        "
+    )
+    
+    add_custom_command( TARGET ${appName} 
+                        POST_BUILD 
+                        COMMAND ${CMAKE_COMMAND} 
+                                -DappName=${appName}
+                                -P "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake" )
 
     # MSIX_createPackage(
     #     APP_NAME "app5" 
@@ -91,14 +116,6 @@ elseif(WIN32)
     #     APP_ICON_PATH "Resources/icon_${appName}.png"
     # )
 
-    NSIS_createPackage(
-            APP_NAME "app5" 
-            APP_VERSION "1.0.1.0"
-            COMPANY_NAME "CoopBardo" 
-            APP_DESCRIPTION "Not too much to say" 
-            APP_ICON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${appName}.ico"
-            LICENSE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/license"
-    )
 
 elseif(UNIX)
     set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos

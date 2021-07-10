@@ -27,7 +27,7 @@ int main(int _argc, char** _argv){
     #if defined(__linux__)
         fs::path parentPath = std::getenv("APPDIR");
     #else
-        fs::path parentPath = p.parent_path();
+        fs::path parentPath = p.parent_path()/"..";
     #endif
     std::string musicPath = (parentPath/"Resources"/"music.mp3").string();
     std::string imgPath = (parentPath/"Resources"/"rappersdelight.png").string();

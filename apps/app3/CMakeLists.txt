@@ -9,8 +9,9 @@ file(GLOB_RECURSE resourceFiles "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 set(appName app3)
 add_executable(${appName} src/main.cpp ${resourceFiles})
 set_target_properties(${appName} PROPERTIES CXX_STANDARD 20)
-target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
-
+if(UNIX)
+    target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
+endif()
 find_package(OpenCV REQUIRED)
 target_link_libraries(${appName} PUBLIC opencv_core opencv_highgui)
 
