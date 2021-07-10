@@ -29,7 +29,7 @@ endmacro(MSIX_findSignTool)
 
 macro(MSIX_createPackage)
     set(options IS_x32)
-    set(oneValueArgs APP_NAME APP_VERSION COMPANY_NAME APP_DESCRIPTION APP_ICON_PATH )
+    set(oneValueArgs APP_NAME APP_VERSION COMPANY_NAME APP_DESCRIPTION APP_ICON_PATH LICENSE_PATH)
     set(multiValueArgs "")
     cmake_parse_arguments(MSIX "${options}" "${oneValueArgs}"
                         "${multiValueArgs}" ${ARGN} )    

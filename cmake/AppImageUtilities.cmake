@@ -11,7 +11,7 @@ endmacro(AppImage_downloadAndGetPath)
 macro(AppImage_createPackage)
     # Parse arguments
     set(options IS_x32)
-    set(oneValueArgs APP_NAME APP_VERSION COMPANY_NAME APP_DESCRIPTION APP_ICON_PATH )
+    set(oneValueArgs APP_NAME APP_VERSION COMPANY_NAME APP_DESCRIPTION APP_ICON_PATH LICENSE_PATH)
     set(multiValueArgs "")
     cmake_parse_arguments(AI "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )    
 

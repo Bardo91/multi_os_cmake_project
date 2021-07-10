@@ -13,8 +13,9 @@ file(GLOB_RECURSE resourceFiles "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 set(appName app4)
 add_executable(${appName} src/main.cpp ${resourceFiles})
 set_target_properties(${appName} PROPERTIES CXX_STANDARD 17)
-target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
-
+if(UNIX AND NOT APPLE)
+    target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
+endif()
 ## Adding dependencies
 target_link_libraries(${appName} PUBLIC Qt5::Widgets Qt5::Multimedia)
 
@@ -43,6 +44,7 @@ endif()
 
 ## Gathering plugins
 include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/installerHelpers.cmake)
 
 # Getting targets of plugins
 set(qtPluginslist "")

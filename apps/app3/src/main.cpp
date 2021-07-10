@@ -4,7 +4,7 @@
 #if defined(__linux__)
     #include <experimental/filesystem>  // Not implemented until g++8
     namespace fs = std::experimental::filesystem;
-#elif defined(_WIN32)
+#else
     #include <filesystem>
     namespace fs = std::filesystem;
 #endif
