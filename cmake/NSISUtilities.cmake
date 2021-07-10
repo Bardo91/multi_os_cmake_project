@@ -34,19 +34,38 @@ macro(NSIS_createPackage)
             # Uninstaller - See function un.onInit and section \"uninstall\" for configuration
             writeUninstaller \"$INSTDIR\\uninstall.exe\"
 
-            # Start Menu
-            createDirectory \"$SMPROGRAMS\\${NSIS_COMPANY_NAME}\"
             createShortCut \"$DESKTOP\\${NSIS_APP_NAME}.lnk\" \"$INSTDIR\\bin\\${NSIS_APP_NAME}.exe\" \"\" \"$INSTDIR\\Resources\\icon_${NSIS_APP_NAME}.ico\"
+
+            # Registry information for add/remove programs
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"DisplayName\" \"${NSIS_COMPANY_NAME} - ${NSIS_APP_NAME} - ${NSIS_APP_DESCRIPTION}\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"UninstallString\" \"$\\\"$INSTDIR\\uninstall.exe$\\\"\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"QuietUninstallString\" \"$\\\"$INSTDIR\\uninstall.exe$\\\" /S\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"InstallLocation\" \"$\\\"$INSTDIR$\\\"\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"DisplayIcon\" \"$\\\"$INSTDIR\\Resources\\icon_${NSIS_APP_NAME}.ico$\\\"\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"Publisher\" \"$\\\"${NSIS_COMPANY_NAME}$\\\"\"
+            # WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"HelpLink\" \"$\\\"${HELPURL}$\\\"\"
+            # WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"URLUpdateInfo\" \"$\\\"${UPDATEURL}$\\\"\"
+            # WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"URLInfoAbout\" \"$\\\"${ABOUTURL}$\\\"\"
+            # WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"DisplayVersion\" \"$\\\"${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}$\\\"\"
+            # WriteRegDWORD HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"VersionMajor\" ${VERSIONMAJOR}
+            # WriteRegDWORD HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"VersionMinor\" ${VERSIONMINOR}
+            WriteRegDWORD HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"NoModify\" 1
+            WriteRegDWORD HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\" \"NoRepair\" 1
+
         sectionEnd
 
         Section \"Uninstall\"
-            # ADD YOUR OWN FILES HERE...
-            
+            # Remove Start Menu launcher
+            Delete \"$INSTDIR\\bin\\*.*\"
+            RMDir /r \"$INSTDIR\\bin\"
+            Delete \"$INSTDIR\\Resources\\*.*\"
+            RMDir /r \"$INSTDIR\\Resources\"
+            Delete \"$DESKTOP\\${NSIS_APP_NAME}.lnk\"
             Delete \"$INSTDIR\\Uninstall.exe\"
             
             RMDir \"$INSTDIR\"
             
-            DeleteRegKey /ifempty HKCU \"${NSIS_COMPANY_NAME}\\${NSIS_APP_NAME}\"
+            DeleteRegKey HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${NSIS_COMPANY_NAME} ${NSIS_APP_NAME}\"
         SectionEnd
         ")
 
