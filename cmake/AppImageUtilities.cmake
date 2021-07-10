@@ -3,8 +3,8 @@
 macro(AppImage_downloadAndGetPath _exePath)
     set(${_exePath} "${CMAKE_CURRENT_BINARY_DIR}/appimagetool-${CMAKE_SYSTEM_PROCESSOR}.AppImage")
     if(NOT EXISTS ${${_exePath}})
-        execute_process(COMMAND wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${CMAKE_SYSTEM_PROCESSOR}.AppImage" -O "${${_exePath}}"
-                        COMMAND chmod +x "${${_exePath}}")
+        execute_process(COMMAND wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${CMAKE_SYSTEM_PROCESSOR}.AppImage" -O "${${_exePath}}")
+        execute_process(COMMAND chmod +x "${${_exePath}}")
     endif()
 endmacro(AppImage_downloadAndGetPath)
 

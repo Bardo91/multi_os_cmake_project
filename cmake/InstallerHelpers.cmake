@@ -26,8 +26,15 @@ endmacro(GetDependenciesExeWin)
 
 
 
-macro(GetDependenciesExeLinux _executable _depList)
-    execute_process(COMMAND ldd ${_executable}
+macro(GetDependenciesExeLinux)
+    # Parse arguments
+    set(options "")
+    set(oneValueArgs EXECUTABLE DEPLIST SYMLIST TARGET_DIR)
+    set(multiValueArgs "")
+    cmake_parse_arguments(DEP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )    
+    
+
+    execute_process(COMMAND ldd ${DEP_EXECUTABLE}
                     OUTPUT_VARIABLE externalDeps )
                     
     string(REPLACE "\n" ";" listRawDeps ${externalDeps})    
@@ -42,8 +49,22 @@ macro(GetDependenciesExeLinux _executable _depList)
             # Resolve symbolink links
             execute_process(COMMAND readlink -f ${depPathSym} OUTPUT_VARIABLE depPath)
             string(REPLACE "\n" "" depPath ${depPath})  
-            message(STATUS "SYM : ${depPathSym} . REAL: ${depPath}")
-            list(APPEND ${_depList} ${depPath})
+
+            # Get filename
+            get_filename_component(depName ${depPath} NAME)
+            get_filename_component(depSymName ${depPathSym} NAME)
+            
+            # Copy dependency
+            file(COPY ${depPath} DESTINATION ${DEP_TARGET_DIR})
+            # Create symbolic link with expected name
+            execute_process(COMMAND ln -s "${DEP_TARGET_DIR}/${depName}" "${DEP_TARGET_DIR}/${depSymName}" ERROR_QUIET)
+
+            if(DEP_SYMLIST)
+                list(APPEND ${DEP_SYMLIST} ${depPathSym})
+            endif()
+            if(DEP_DEPLIST)
+                list(APPEND ${DEP_DEPLIST} ${depPath})
+            endif()
         endif()
     endforeach(rawDep)
 endmacro(GetDependenciesExeLinux)

@@ -98,8 +98,8 @@ elseif(UNIX)
     # 666 This should run post make of app
     # file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${appName} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/)
 
-    GetDependenciesExeLinux(${CMAKE_CURRENT_BINARY_DIR}/${appName} linuxDepList)
-    file(COPY ${linuxDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
+    GetDependenciesExeLinux(EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/${appName} 
+                            TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
     
     AppImage_createPackage(
         APP_NAME "app5" 
