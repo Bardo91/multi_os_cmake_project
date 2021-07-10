@@ -132,23 +132,33 @@ elseif(WIN32)
 
 
 elseif(UNIX)
-    set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
+    # This needs to be done here because it depends on scoped variables of QT that would need to be reloaded if this step
+    # is delayed to POST_BUILD in the separated cmake. 
+    set(finalListPluginDirs "") # By now unused in linux, but essential for bundles in MACos
     copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib/plugins # This last folder varies depend on the OS
                             qtPluginslist 
                             finalListPluginDirs)   
 
     # 666 This should run post make of app
     # file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${appName} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/)
+    file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake"  
+                "
+                GetDependenciesExeLinux(EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/${appName} 
+                                        TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
 
-    GetDependenciesExeLinux(EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/${appName} 
-                            TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
-    
-    AppImage_createPackage(
-        APP_NAME "app5" 
-        APP_VERSION "1.0.1.0"
-        COMPANY_NAME "CoopBardo" 
-        APP_DESCRIPTION "Not too much to say" 
-        APP_ICON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${appName}.png")
+                AppImage_createPackage(
+                    APP_NAME \"app5\" 
+                    APP_VERSION \"1.0.1.0\"
+                    COMPANY_NAME \"CoopBardo\" 
+                    APP_DESCRIPTION \"Not too much to say\" 
+                    APP_ICON_PATH \"${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${appName}.png\")
+                ")
+
+    add_custom_command( TARGET ${appName} 
+                POST_BUILD 
+                COMMAND ${CMAKE_COMMAND} 
+                        -P "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake" )
+
 
 else()
     message(FATAL_ERROR "Unrecognized OS")
