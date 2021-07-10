@@ -13,7 +13,7 @@ file(GLOB_RECURSE resourceFiles "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 set(appName app4)
 add_executable(${appName} src/main.cpp ${resourceFiles})
 set_target_properties(${appName} PROPERTIES CXX_STANDARD 17)
-if(UNIX)
+if(UNIX AND NOT APPLE)
     target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
 endif()
 ## Adding dependencies
