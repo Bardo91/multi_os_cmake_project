@@ -13,7 +13,7 @@ file(GLOB_RECURSE resourceFiles "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 set(appName app5)
 add_executable(${appName} src/main.cpp ${resourceFiles})
 set_target_properties(${appName} PROPERTIES CXX_STANDARD 17)
-if(UNIX)
+if(UNIX AND NOT APPLE)
     target_link_libraries(${appName} LINK_PUBLIC stdc++fs)
 endif()
 ## Adding dependencies
@@ -47,7 +47,7 @@ endif()
 
 ## Gathering plugins
 include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/installerHelpers.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/MSIXUtilities.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/NSISUtilities.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/AppImageUtilities.cmake)
@@ -67,12 +67,26 @@ if(APPLE)
 
     # This line should be executed after the app has been generated, lets try to options
     # Option one, tradicionally it is called in the instal step (at least is what I have always seen in tutorials)
-    install(CODE    "
-                    include(InstallRequiredSystemLibraries)
-                    include(BundleUtilities)
-                    fixup_bundle(\"${CMAKE_CURRENT_BINARY_DIR}/${appName}.app\" \"${finalListPluginDirs}\" \"\")
-                    "
-            COMPONENT Runtime)
+    # install(CODE    "
+    #                 include(InstallRequiredSystemLibraries)
+    #                 include(BundleUtilities)
+    #                 fixup_bundle(\"${CMAKE_CURRENT_BINARY_DIR}/${appName}.app\" \"${finalListPluginDirs}\" \"\")
+    #                 "
+    #         COMPONENT Runtime)
+
+    # Second preferred option is to create a new target to be executed POST_BUILD of the app
+    file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageFix.cmake"  
+                "
+                include(InstallRequiredSystemLibraries)
+                include(BundleUtilities)
+                fixup_bundle(\"${CMAKE_CURRENT_BINARY_DIR}/${appName}.app\" \"${finalListPluginDirs}\" \"\")
+                ")
+
+    add_custom_command( TARGET ${appName} 
+                POST_BUILD 
+                COMMAND ${CMAKE_COMMAND} 
+                        -P "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageFix.cmake" )
+
 elseif(WIN32)
     set(finalListPluginDirs \"\") # By now unused in windows, but essential for bundles in MACos
     copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin # This folder varies depend on the OS
@@ -81,7 +95,7 @@ elseif(WIN32)
                             
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake"
         "
-            include(${PROJECT_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
+            include(${PROJECT_SOURCE_DIR}/cmake/installerHelpers.cmake)
             include(${PROJECT_SOURCE_DIR}/cmake/NSISUtilities.cmake)   
 
             DownloadDependencyWalker() # 666 This should run post make of app
@@ -118,23 +132,38 @@ elseif(WIN32)
 
 
 elseif(UNIX)
-    set(finalListPluginDirs "") # By now unused in windows, but essential for bundles in MACos
-    copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib/plugins # This last folder varies depend on the OS
-                            qtPluginslist 
-                            finalListPluginDirs)   
+    # This needs to be done here because it depends on scoped variables of QT that would need to be reloaded if this step
+    # is delayed to POST_BUILD in the separated cmake. 
+    # set(finalListPluginDirs "") # By now unused in linux, but essential for bundles in MACos
+    # copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib # This last folder varies depend on the OS
+    #                         qtPluginslist 
+    #                         finalListPluginDirs)   
 
-    # 666 This should run post make of app
-    # file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${appName} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/)
+    file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake"  
+                "
+                set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+                set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 
-    GetDependenciesExeLinux(${CMAKE_CURRENT_BINARY_DIR}/${appName} linuxDepList)
-    file(COPY ${linuxDepList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
-    
-    AppImage_createPackage(
-        APP_NAME "app5" 
-        APP_VERSION "1.0.1.0"
-        COMPANY_NAME "CoopBardo" 
-        APP_DESCRIPTION "Not too much to say" 
-        APP_ICON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${appName}.png")
+                include(${PROJECT_SOURCE_DIR}/cmake/installerHelpers.cmake)
+                include(${PROJECT_SOURCE_DIR}/cmake/AppImageUtilities.cmake)   
+
+                GetDependenciesExeLinux(EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/${appName} 
+                                        APPDIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}
+                                        HAS_QT)
+
+                AppImage_createPackage(
+                    APP_NAME \"app5\" 
+                    APP_VERSION \"1.0.1.0\"
+                    COMPANY_NAME \"CoopBardo\" 
+                    APP_DESCRIPTION \"Not too much to say\" 
+                    APP_ICON_PATH \"${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${appName}.png\")
+                ")
+
+    add_custom_command( TARGET ${appName} 
+                POST_BUILD VERBATIM USES_TERMINAL
+                COMMAND ${CMAKE_COMMAND} 
+                        -P "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake" )
+
 
 else()
     message(FATAL_ERROR "Unrecognized OS")
