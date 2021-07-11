@@ -139,8 +139,6 @@ elseif(UNIX)
     #                         qtPluginslist 
     #                         finalListPluginDirs)   
 
-    # 666 This should run post make of app
-    # file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${appName} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/)
     file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake"  
                 "
                 set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})

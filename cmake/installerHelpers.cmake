@@ -34,16 +34,20 @@ macro(GetDependenciesExeLinux)
     set(multiValueArgs "")
     cmake_parse_arguments(DEP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )    
     
-    execute_process(COMMAND wget "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage")
+    if(NOT EXISTS "./linuxdeploy-x86_64.AppImage")
+        execute_process(COMMAND wget "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage")
+    endif()
     execute_process(COMMAND chmod +x ./linuxdeploy-x86_64.AppImage)
     if(DEP_HAS_QT)
-        execute_process(COMMAND wget "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage")
+        if(NOT EXISTS "./linuxdeploy-plugin-qt-x86_64.AppImage")
+            execute_process(COMMAND wget "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage")
+        endif()
         execute_process(COMMAND chmod +x ./linuxdeploy-plugin-qt-x86_64.AppImage)
-        execute_process(COMMAND ./linuxdeploy-x86_64.AppImage --appdir=${DEP_APPDIR} -e app5 --plugin qt)
+        execute_process(COMMAND ./linuxdeploy-x86_64.AppImage --appdir=${DEP_APPDIR} -e ${DEP_EXECUTABLE} --plugin qt)
     else()
-        execute_process(COMMAND ./linuxdeploy-x86_64.AppImage --appdir=${DEP_APPDIR} -e app5)
+        execute_process(COMMAND ./linuxdeploy-x86_64.AppImage --appdir=${DEP_APPDIR} -e ${DEP_EXECUTABLE})
     endif()
-    
+
     # execute_process(COMMAND ldd ${DEP_EXECUTABLE}
     #                 OUTPUT_VARIABLE externalDeps )
                     
