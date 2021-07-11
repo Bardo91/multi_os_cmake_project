@@ -70,10 +70,10 @@ macro(deployApplication)
                 file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${DEPLOY_APP_NAME}.exe DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin)
 
                 NSIS_createPackage(
-                    APP_NAME \"${DEPLOY_APP_VERSION}\" 
+                    APP_NAME \"${DEPLOY_APP_NAME}\" 
                     APP_VERSION \"${DEPLOY_APP_VERSION}\"
                     COMPANY_NAME \"${DEPLOY_COMPANY_NAME}\" 
-                    APP_DESCRIPTION \"${APP_DESCRIPTION}\" 
+                    APP_DESCRIPTION \"${DEPLOY_APP_DESCRIPTION}\" 
                     APP_ICON_PATH \"${CMAKE_CURRENT_SOURCE_DIR}/resources/icon_${DEPLOY_APP_NAME}.ico\"
                     LICENSE_PATH \"${CMAKE_CURRENT_SOURCE_DIR}/license\"
                     CONFIG_FILE \"${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${DEPLOY_APP_NAME}_installer.nsi\"
