@@ -1,6 +1,6 @@
 
-set(dpWalkerDir "${CMAKE_BINARY_DIR}/dependencyWalker")
 macro(DownloadDependencyWalker)
+    set(dpWalkerDir "${CMAKE_BINARY_DIR}/dependencyWalker")
     if(NOT EXISTS ${dpWalkerDir})
         set(dependencyWalkerRelease "https://github.com/lucasg/Dependencies/releases/download/v1.10/Dependencies_x64_Release.zip")
         
@@ -29,48 +29,57 @@ endmacro(GetDependenciesExeWin)
 
 macro(GetDependenciesExeLinux)
     # Parse arguments
-    set(options "")
-    set(oneValueArgs EXECUTABLE DEPLIST SYMLIST TARGET_DIR)
+    set(options HAS_QT)
+    set(oneValueArgs EXECUTABLE DEPLIST SYMLIST APPDIR)
     set(multiValueArgs "")
     cmake_parse_arguments(DEP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )    
     
-
-    execute_process(COMMAND ldd ${DEP_EXECUTABLE}
-                    OUTPUT_VARIABLE externalDeps )
+    execute_process(COMMAND wget "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage")
+    execute_process(COMMAND chmod +x ./linuxdeploy-x86_64.AppImage)
+    if(DEP_HAS_QT)
+        execute_process(COMMAND wget "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage")
+        execute_process(COMMAND chmod +x ./linuxdeploy-plugin-qt-x86_64.AppImage)
+        execute_process(COMMAND ./linuxdeploy-x86_64.AppImage --appdir=${DEP_APPDIR} -e app5 --plugin qt)
+    else()
+        execute_process(COMMAND ./linuxdeploy-x86_64.AppImage --appdir=${DEP_APPDIR} -e app5)
+    endif()
+    
+    # execute_process(COMMAND ldd ${DEP_EXECUTABLE}
+    #                 OUTPUT_VARIABLE externalDeps )
                     
-    string(REPLACE "\n" ";" listRawDeps ${externalDeps})    
-    foreach(rawDep ${listRawDeps})
-        string(REPLACE " => " ";" elements ${rawDep})  
-        list(LENGTH elements nElems)
-        if(${nElems} EQUAL 2)
-            list(GET elements 1 depPathPlusAddress)
-            string(REPLACE " (" ";" elements2 ${depPathPlusAddress})  
-            list(GET elements2 0 depPathSym)
+    # string(REPLACE "\n" ";" listRawDeps ${externalDeps})    
+    # foreach(rawDep ${listRawDeps})
+    #     string(REPLACE " => " ";" elements ${rawDep})  
+    #     list(LENGTH elements nElems)
+    #     if(${nElems} EQUAL 2)
+    #         list(GET elements 1 depPathPlusAddress)
+    #         string(REPLACE " (" ";" elements2 ${depPathPlusAddress})  
+    #         list(GET elements2 0 depPathSym)
 
-            # Resolve symbolink links
-            execute_process(COMMAND readlink -f ${depPathSym} OUTPUT_VARIABLE depPath)
-            string(REPLACE "\n" "" depPath ${depPath})  
+    #         # Resolve symbolink links
+    #         execute_process(COMMAND readlink -f ${depPathSym} OUTPUT_VARIABLE depPath)
+    #         string(REPLACE "\n" "" depPath ${depPath})  
 
-            # Get filename
-            get_filename_component(depName ${depPath} NAME)
-            get_filename_component(depSymName ${depPathSym} NAME)
+    #         # Get filename
+    #         get_filename_component(depName ${depPath} NAME)
+    #         get_filename_component(depSymName ${depPathSym} NAME)
             
-            # Copy dependency
-            file(COPY ${depPath} DESTINATION ${DEP_TARGET_DIR})
-            # Fix rpath to point relative to app origin
-            execute_process(COMMAND patchelf --set-rpath "\$ORIGIN/usr/lib" "${DEP_TARGET_DIR}/${depName}")
+    #         # Copy dependency
+    #         file(COPY ${depPath} DESTINATION ${DEP_TARGET_DIR})
+    #         # Fix rpath to point relative to app origin
+    #         execute_process(COMMAND patchelf --set-rpath "\$ORIGIN" "${DEP_TARGET_DIR}/${depName}")
 
-            # Create symbolic link with expected name
-            execute_process(COMMAND ln -sr "${DEP_TARGET_DIR}/${depName}" "${DEP_TARGET_DIR}/${depSymName}" ERROR_QUIET)
+    #         # Create symbolic link with expected name
+    #         execute_process(COMMAND ln -sr "${DEP_TARGET_DIR}/${depName}" "${DEP_TARGET_DIR}/${depSymName}" ERROR_QUIET)
 
-            if(DEP_SYMLIST)
-                list(APPEND ${DEP_SYMLIST} ${depPathSym})
-            endif()
-            if(DEP_DEPLIST)
-                list(APPEND ${DEP_DEPLIST} ${depPath})
-            endif()
-        endif()
-    endforeach(rawDep)
+    #         if(DEP_SYMLIST)
+    #             list(APPEND ${DEP_SYMLIST} ${depPathSym})
+    #         endif()
+    #         if(DEP_DEPLIST)
+    #             list(APPEND ${DEP_DEPLIST} ${depPath})
+    #         endif()
+    #     endif()
+    # endforeach(rawDep)
 endmacro(GetDependenciesExeLinux)
 
 macro(getLocationTargets _targetList _targetsLocation)

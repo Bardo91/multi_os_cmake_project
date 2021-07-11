@@ -134,10 +134,10 @@ elseif(WIN32)
 elseif(UNIX)
     # This needs to be done here because it depends on scoped variables of QT that would need to be reloaded if this step
     # is delayed to POST_BUILD in the separated cmake. 
-    set(finalListPluginDirs "") # By now unused in linux, but essential for bundles in MACos
-    copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib/plugins # This last folder varies depend on the OS
-                            qtPluginslist 
-                            finalListPluginDirs)   
+    # set(finalListPluginDirs "") # By now unused in linux, but essential for bundles in MACos
+    # copyPluginsToBinTarget( ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib # This last folder varies depend on the OS
+    #                         qtPluginslist 
+    #                         finalListPluginDirs)   
 
     # 666 This should run post make of app
     # file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${appName} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/)
@@ -150,7 +150,8 @@ elseif(UNIX)
                 include(${PROJECT_SOURCE_DIR}/cmake/AppImageUtilities.cmake)   
 
                 GetDependenciesExeLinux(EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/${appName} 
-                                        TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
+                                        APPDIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}
+                                        HAS_QT)
 
                 AppImage_createPackage(
                     APP_NAME \"app5\" 
@@ -161,7 +162,7 @@ elseif(UNIX)
                 ")
 
     add_custom_command( TARGET ${appName} 
-                POST_BUILD 
+                POST_BUILD VERBATIM USES_TERMINAL
                 COMMAND ${CMAKE_COMMAND} 
                         -P "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake" )
 

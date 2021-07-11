@@ -20,18 +20,12 @@ macro(AppImage_createPackage)
     file(COPY ${AI_APP_ICON_PATH} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
     get_filename_component(iconFileName ${AI_APP_ICON_PATH} NAME_WE)
 
-    # Copy exe
-    file(COPY "${CMAKE_CURRENT_BINARY_DIR}/${AI_APP_NAME}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
-
-    # Changing rpath using patchelf
-    execute_process(COMMAND patchelf --set-rpath "\$ORIGIN/usr/lib" "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${AI_APP_NAME}")
-
     # Creating AppRun for AppImage
     file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/AppRun"
                 "#!/bin/sh\n"
                 "\n"
                 "cd \"$(dirname \"$0\")\"\n"
-                "exec ./${AI_APP_NAME}\n"
+                "exec ./usr/bin/${AI_APP_NAME}\n"
     )
     execute_process(COMMAND chmod a+x "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/AppRun")
 
