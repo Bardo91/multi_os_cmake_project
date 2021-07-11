@@ -1,9 +1,10 @@
 
 
 macro(AppImage_downloadAndGetPath _exePath)
-    set(${_exePath} "${CMAKE_CURRENT_BINARY_DIR}/appimagetool-${CMAKE_SYSTEM_PROCESSOR}.AppImage")
+    set(ARCH "x86_64")
+    set(${_exePath} "${CMAKE_CURRENT_BINARY_DIR}/appimagetool-${ARCH}.AppImage")
     if(NOT EXISTS ${${_exePath}})
-        execute_process(COMMAND wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${CMAKE_SYSTEM_PROCESSOR}.AppImage" -O "${${_exePath}}")
+        execute_process(COMMAND wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${ARCH}.AppImage" -O "${${_exePath}}")
         execute_process(COMMAND chmod +x "${${_exePath}}")
     endif()
 endmacro(AppImage_downloadAndGetPath)
@@ -21,6 +22,11 @@ macro(AppImage_createPackage)
 
     # Copy exe
     file(COPY "${CMAKE_CURRENT_BINARY_DIR}/${AI_APP_NAME}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+
+    # Changing rpath using patchelf
+    execute_process(COMMAND patchelf --set-rpath "\$ORIGIN/usr/lib" "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${AI_APP_NAME}")
+
+    # Creating AppRun for AppImage
     file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/AppRun"
                 "#!/bin/sh\n"
                 "\n"
@@ -28,10 +34,6 @@ macro(AppImage_createPackage)
                 "exec ./${AI_APP_NAME}\n"
     )
     execute_process(COMMAND chmod a+x "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/AppRun")
-
-    # file(COPY "${CMAKE_CURRENT_BINARY_DIR}/${AI_APP_NAME}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin")
-    # file(RENAME "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/${AI_APP_NAME}" "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/AppRun")
-    # execute_process(COMMAND chmod a+x "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/bin/AppRun")
 
     #Configure Desktop file
     file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${AI_APP_NAME}.desktop"
@@ -49,6 +51,6 @@ macro(AppImage_createPackage)
     set(appImageToolPath "")
     AppImage_downloadAndGetPath(appImageToolPath)
     execute_process(COMMAND "${appImageToolPath}" "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
-    
+
 endmacro(AppImage_createPackage)
 

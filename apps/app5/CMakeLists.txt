@@ -47,7 +47,7 @@ endif()
 
 ## Gathering plugins
 include(${CMAKE_SOURCE_DIR}/cmake/qtHelpers.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/installerHelpers.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/MSIXUtilities.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/NSISUtilities.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/AppImageUtilities.cmake)
@@ -95,7 +95,7 @@ elseif(WIN32)
                             
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake"
         "
-            include(${PROJECT_SOURCE_DIR}/cmake/InstallerHelpers.cmake)
+            include(${PROJECT_SOURCE_DIR}/cmake/installerHelpers.cmake)
             include(${PROJECT_SOURCE_DIR}/cmake/NSISUtilities.cmake)   
 
             DownloadDependencyWalker() # 666 This should run post make of app
@@ -143,6 +143,12 @@ elseif(UNIX)
     # file(COPY ${CMAKE_CURRENT_BINARY_DIR}/${appName} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/)
     file(WRITE  "${CMAKE_CURRENT_BINARY_DIR}/${appName}_packageCreation.cmake"  
                 "
+                set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+                set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+
+                include(${PROJECT_SOURCE_DIR}/cmake/installerHelpers.cmake)
+                include(${PROJECT_SOURCE_DIR}/cmake/AppImageUtilities.cmake)   
+
                 GetDependenciesExeLinux(EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/${appName} 
                                         TARGET_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/usr/lib)
 

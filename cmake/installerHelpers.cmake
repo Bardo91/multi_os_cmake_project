@@ -57,8 +57,11 @@ macro(GetDependenciesExeLinux)
             
             # Copy dependency
             file(COPY ${depPath} DESTINATION ${DEP_TARGET_DIR})
+            # Fix rpath to point relative to app origin
+            execute_process(COMMAND patchelf --set-rpath "\$ORIGIN/usr/lib" "${DEP_TARGET_DIR}/${depName}")
+
             # Create symbolic link with expected name
-            execute_process(COMMAND ln -s "${DEP_TARGET_DIR}/${depName}" "${DEP_TARGET_DIR}/${depSymName}" ERROR_QUIET)
+            execute_process(COMMAND ln -sr "${DEP_TARGET_DIR}/${depName}" "${DEP_TARGET_DIR}/${depSymName}" ERROR_QUIET)
 
             if(DEP_SYMLIST)
                 list(APPEND ${DEP_SYMLIST} ${depPathSym})
