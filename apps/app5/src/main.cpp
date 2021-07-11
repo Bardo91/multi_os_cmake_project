@@ -5,7 +5,7 @@
 #if defined(__linux__)
     #include <experimental/filesystem>  // Not implemented until g++8
     namespace fs = std::experimental::filesystem;
-#elif defined(_WIN32)
+#else
     #include <filesystem>
     namespace fs = std::filesystem;
 #endif
@@ -23,10 +23,13 @@ int main(int _argc, char** _argv){
     
     QApplication app(_argc, _argv);
 
-    fs::path p = _argv[0];
     #if defined(__linux__)
         fs::path parentPath = std::getenv("APPDIR");
+    #elif defined(__APPLE__)
+        fs::path p = _argv[0];
+        fs::path parentPath = p.parent_path();
     #else
+        fs::path p = _argv[0];
         fs::path parentPath = p.parent_path()/"..";
     #endif
     std::string musicPath = (parentPath/"Resources"/"music.mp3").string();
