@@ -33,7 +33,7 @@ if(APPLE)
 
     set_source_files_properties(${resourceFiles} PROPERTIES 
                                 MACOSX_PACKAGE_LOCATION Resources)
-elseif(UNIX)
+elseif(UNIX AND NOT APPLE)
     file(COPY ${resourceFiles} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Resources)
 elseif(WIN32)
     set_target_properties(  ${appName}  PROPERTIES
